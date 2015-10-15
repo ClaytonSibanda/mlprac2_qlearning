@@ -24,7 +24,7 @@ CQLearningController::CQLearningController(HWND hwndMain):
 {
 	printf("gx: %d   gy: %d\n", _grid_size_x, _grid_size_y);
 
-	InitializeLearningAlgorithm();
+	//InitializeLearningAlgorithm();
 
 	//for (uint y = 0; y < _grid_size_y; y++){
 	//	for (uint x = 0; x < _grid_size_x; x++){
@@ -46,17 +46,12 @@ void CQLearningController::InitializeLearningAlgorithm(void)
 	//TODO
 
 	//initialize the Q-tables with all 0's
-	for (uint sweeper = 0; sweeper < m_NumSweepers; sweeper++){
+	for (uint sweeper = 0; sweeper < CParams::iNumSweepers; sweeper++){
 		std::vector<std::vector<std::vector<double > > > q_table;
 			for (uint x = 0; x < _grid_size_x; x++){
 				std::vector<std::vector<double> > state_y;
 				for (uint y = 0; y < _grid_size_y; y++){
-					std::vector<double> actions;
-					for (uint action = 0; action < 4; action++){
-						actions.push_back(0.0);
-					}
-
-					state_y.push_back(actions);
+					state_y.push_back({500.0, 500.0, 500.0, 500.0});
 				}
 
 				q_table.push_back(state_y);
@@ -70,10 +65,48 @@ void CQLearningController::InitializeLearningAlgorithm(void)
  collecting all the mines on the field. It may also penalize movement to encourage exploring all directions and 
  of course for hitting supermines/rocks!
 */
-double CQLearningController::R(uint x,uint y, uint sweeper_no){
+double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	//TODO: roll your own here!
-	return 0;
+	//return 0;
+
+	double reward = 500.0f; //neutral reward
+
+	//see what the minesweeper hit
+	int hit_index = ((m_vecSweepers[sweeper_no])->CheckForObject(m_vecObjects, CParams::dMineScale));
+	if (hit_index >= 0)
+	{
+		switch (m_vecObjects[hit_index]->getType()){
+			case CDiscCollisionObject::Mine:{
+				reward = 1000.0;
+				break;
+			}
+			case CDiscCollisionObject::Rock:{
+				reward = 0.0;
+				break;
+			}
+			case CDiscCollisionObject::SuperMine:{
+				reward = 0.0;
+				break;
+			}
+		}
+	}
+	
+	return reward;
 }
+
+int getMaxAct(std::vector<double> actions){
+	int max_act = 0;
+	double max_val = actions[max_act];
+	for (uint a = 1; a < 4; a++){
+		if (actions[a] > max_val){
+			max_act = a;
+			max_val = actions[a];
+		}
+	}
+
+	return max_act;
+}
+
 /**
 The update method. Main loop body of our Q Learning implementation
 See: Watkins, Christopher JCH, and Peter Dayan. "Q-learning." Machine learning 8. 3-4 (1992): 279-292
@@ -82,11 +115,7 @@ bool CQLearningController::Update(void)
 {
 	//m_vecSweepers is the array of minesweepers
 	//everything you need will be m_[something] ;)
-	uint cDead = std::count_if(m_vecSweepers.begin(),
-							   m_vecSweepers.end(),
-						       [](CDiscMinesweeper * s)->bool{
-								return s->isDead();
-							   });
+	uint cDead = std::count_if(m_vecSweepers.begin(), m_vecSweepers.end(), [](CDiscMinesweeper * s)->bool{return s->isDead();});
 	if (cDead == CParams::iNumSweepers){
 		printf("All dead ... skipping to next iteration\n");
 		m_iTicks = CParams::iNumTicks;
@@ -100,8 +129,13 @@ bool CQLearningController::Update(void)
 		*/
 		//1:::Observe the current state:
 		//TODO
+		SVector2D<int> pos = m_vecSweepers[sw]->Position();
+
 		//2:::Select action with highest historic return:
 		//TODO
+		int max_act = getMaxAct(_Q_sx_sy_a[sw][pos.x / (CParams::iGridCellDim + 1)][pos.y / (CParams::iGridCellDim + 1)]);
+		m_vecSweepers[sw]->setRotation((ROTATION_DIRECTION)max_act);
+
 		//now call the parents update, so all the sweepers fulfill their chosen action
 	}
 	

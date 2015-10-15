@@ -14,7 +14,7 @@ private:
 	uint _grid_size_x;
 	uint _grid_size_y;
 
-	std::vector<std::vector<std::vector<std::vector<double> > > > _Q_sx_sy_a; //up-right-down-left == 0-1-2-3
+	std::vector<std::vector<std::vector<std::vector<double> > > > _Q_sx_sy_a; //right-up-left-down == 0-1-2-3
 
 public:
 	CQLearningController(HWND hwndMain);
