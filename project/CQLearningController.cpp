@@ -51,7 +51,7 @@ void CQLearningController::InitializeLearningAlgorithm(void)
 			for (uint x = 0; x < _grid_size_x; x++){
 				std::vector<std::vector<double> > state_y;
 				for (uint y = 0; y < _grid_size_y; y++){
-					state_y.push_back({500.0, 500.0, 500.0, 500.0});
+					state_y.push_back({0.5, 0.5, 0.5, 0.5});
 				}
 
 				q_table.push_back(state_y);
@@ -69,7 +69,7 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	//TODO: roll your own here!
 	//return 0;
 
-	double reward = 500.0f; //neutral reward
+	double reward = 0.5f; //neutral reward
 
 	//see what the minesweeper hit
 	int hit_index = ((m_vecSweepers[sweeper_no])->CheckForObject(m_vecObjects, CParams::dMineScale));
@@ -77,7 +77,7 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	{
 		switch (m_vecObjects[hit_index]->getType()){
 			case CDiscCollisionObject::Mine:{
-				reward = 1000.0;
+				reward = 1.0;
 				break;
 			}
 			case CDiscCollisionObject::Rock:{
@@ -106,7 +106,7 @@ int getMaxAct(std::vector<double> actions){
 
 	std::vector<int> maxs;
 	for (uint i = 0; i < 4; i++){
-		if ((actions[i] - max_val) < 0.0001){
+		if ((actions[i] - max_val) < 0.000001){
 			maxs.push_back(i);
 		}
 	}
@@ -125,7 +125,7 @@ int getMaxActVal(std::vector<double> actions){
 
 	std::vector<int> maxs;
 	for (uint i = 0; i < 4; i++){
-		if ((actions[i] - max_val) < 0.0001){
+		if ((actions[i] - max_val) < 0.000001){
 			maxs.push_back(actions[i]);
 		}
 	}
@@ -157,8 +157,8 @@ bool CQLearningController::Update(void)
 		//1:::Observe the current state:
 		//TODO
 		SVector2D<int> pos = m_vecSweepers[sw]->Position();
-		pos.x /= (CParams::iGridCellDim + 1);
-		pos.y /= (CParams::iGridCellDim + 1);
+		pos.x /= (CParams::iGridCellDim);
+		pos.y /= (CParams::iGridCellDim);
 
 		//2:::Select action with highest historic return:
 		//TODO
@@ -176,12 +176,12 @@ bool CQLearningController::Update(void)
 		//3:::Observe new state:
 		//TODO
 		SVector2D<int> prev_pos = m_vecSweepers[sw]->PrevPosition();
-		prev_pos.x /= (CParams::iGridCellDim + 1);
-		prev_pos.y /= (CParams::iGridCellDim + 1);
+		prev_pos.x /= (CParams::iGridCellDim);
+		prev_pos.y /= (CParams::iGridCellDim);
 
 		SVector2D<int> pos = m_vecSweepers[sw]->Position();
-		pos.x /= (CParams::iGridCellDim + 1);
-		pos.y /= (CParams::iGridCellDim + 1);
+		pos.x /= (CParams::iGridCellDim);
+		pos.y /= (CParams::iGridCellDim);
 
 		int action = m_vecSweepers[sw]->getRotation();
 
