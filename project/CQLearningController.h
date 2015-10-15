@@ -16,6 +16,10 @@ private:
 
 	std::vector<std::vector<std::vector<std::vector<double> > > > _Q_sx_sy_a; //right-up-left-down == 0-1-2-3
 
+	double gamma_discount_rt = 0.5;
+	double lambda_learn_rt = 0.5;
+
+
 public:
 	CQLearningController(HWND hwndMain);
 	virtual void InitializeLearningAlgorithm(void);

@@ -104,7 +104,34 @@ int getMaxAct(std::vector<double> actions){
 		}
 	}
 
-	return max_act;
+	std::vector<int> maxs;
+	for (uint i = 0; i < 4; i++){
+		if ((actions[i] - max_val) < 0.0001){
+			maxs.push_back(i);
+		}
+	}
+
+	int ri = RandInt(0, maxs.size() - 1);
+	return maxs[ri];
+}
+
+int getMaxActVal(std::vector<double> actions){
+	double max_val = actions[0];
+	for (uint a = 1; a < 4; a++){
+		if (actions[a] > max_val){
+			max_val = actions[a];
+		}
+	}
+
+	std::vector<int> maxs;
+	for (uint i = 0; i < 4; i++){
+		if ((actions[i] - max_val) < 0.0001){
+			maxs.push_back(actions[i]);
+		}
+	}
+
+	int ri = RandInt(0, maxs.size() - 1);
+	return maxs[ri];
 }
 
 /**
@@ -130,10 +157,12 @@ bool CQLearningController::Update(void)
 		//1:::Observe the current state:
 		//TODO
 		SVector2D<int> pos = m_vecSweepers[sw]->Position();
+		pos.x /= (CParams::iGridCellDim + 1);
+		pos.y /= (CParams::iGridCellDim + 1);
 
 		//2:::Select action with highest historic return:
 		//TODO
-		int max_act = getMaxAct(_Q_sx_sy_a[sw][pos.x / (CParams::iGridCellDim + 1)][pos.y / (CParams::iGridCellDim + 1)]);
+		int max_act = getMaxAct(_Q_sx_sy_a[sw][pos.x][pos.y]);
 		m_vecSweepers[sw]->setRotation((ROTATION_DIRECTION)max_act);
 
 		//now call the parents update, so all the sweepers fulfill their chosen action
@@ -146,8 +175,26 @@ bool CQLearningController::Update(void)
 		//TODO:compute your indexes.. it may also be necessary to keep track of the previous state
 		//3:::Observe new state:
 		//TODO
+		SVector2D<int> prev_pos = m_vecSweepers[sw]->PrevPosition();
+		prev_pos.x /= (CParams::iGridCellDim + 1);
+		prev_pos.y /= (CParams::iGridCellDim + 1);
+
+		SVector2D<int> pos = m_vecSweepers[sw]->Position();
+		pos.x /= (CParams::iGridCellDim + 1);
+		pos.y /= (CParams::iGridCellDim + 1);
+
+		int action = m_vecSweepers[sw]->getRotation();
+
 		//4:::Update _Q_s_a accordingly:
 		//TODO
+		//_Q_sx_sy_a[sw][prev_pos.x][prev_pos.y][action] = R(pos.x, pos.y, sw)
+		//	+ (gamma_discount_rt * (
+		//	((1 - lambda_learn_rt) * getMaxActVal(_Q_sx_sy_a[sw][pos.x][pos.y]))
+		//	+ (lambda_learn_rt * _Q_sx_sy_a[sw][pos.x][pos.y][action])
+		//	)
+		//	);
+		_Q_sx_sy_a[sw][prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[sw][pos.x][pos.y]) - getMaxActVal(_Q_sx_sy_a[sw][prev_pos.x][prev_pos.y]))));
+		printf("QVAL: %f\n", _Q_sx_sy_a[sw][prev_pos.x][prev_pos.y][action]);
 	}
 	return true;
 }
