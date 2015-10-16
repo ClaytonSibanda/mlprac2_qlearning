@@ -101,13 +101,15 @@ int getMaxAct(std::vector<double> actions){
 
 	std::vector<int> maxs;
 	for (uint i = 0; i < 4; i++){
-		if ((actions[i] - max_val) < 0.000001){
+		if (abs(actions[i] - max_val) < 0.000001){
+		//if (actions[i] == max_val){
 			maxs.push_back(i);
 		}
 	}
 
 	int ri = RandInt(0, maxs.size() - 1);
 	return maxs[ri];
+	//return max_act;
 }
 
 int getMaxActVal(std::vector<double> actions){
@@ -120,13 +122,14 @@ int getMaxActVal(std::vector<double> actions){
 
 	std::vector<int> maxs;
 	for (uint i = 0; i < 4; i++){
-		if ((actions[i] - max_val) < 0.000001){
+		if (abs(actions[i] - max_val) < 0.000001){
 			maxs.push_back(actions[i]);
 		}
 	}
 
 	int ri = RandInt(0, maxs.size() - 1);
 	return maxs[ri];
+	//return max_val;
 }
 
 /**
@@ -178,7 +181,7 @@ bool CQLearningController::Update(void)
 		pos.x /= (CParams::iGridCellDim);
 		pos.y /= (CParams::iGridCellDim);
 
-		int action = m_vecSweepers[sw]->getRotation();
+		int action = (int)m_vecSweepers[sw]->getRotation();
 
 		//4:::Update _Q_s_a accordingly:
 		//TODO
@@ -188,7 +191,10 @@ bool CQLearningController::Update(void)
 		//	+ (lambda_learn_rt * _Q_sx_sy_a[sw][pos.x][pos.y][action])
 		//	)
 		//	);
-		_Q_sx_sy_a[prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[pos.x][pos.y]) - getMaxActVal(_Q_sx_sy_a[prev_pos.x][prev_pos.y]))));
+
+		//_Q_sx_sy_a[prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[pos.x][pos.y])) - getMaxActVal(_Q_sx_sy_a[prev_pos.x][prev_pos.y])));
+
+		_Q_sx_sy_a[prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[pos.x][pos.y])) - _Q_sx_sy_a[prev_pos.x][prev_pos.y][action]));
 		//printf("QVAL: %f\n", _Q_sx_sy_a[prev_pos.x][prev_pos.y][action]);
 	}
 	return true;
