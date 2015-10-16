@@ -14,9 +14,9 @@ private:
 	uint _grid_size_x;
 	uint _grid_size_y;
 
-	std::vector<std::vector<std::vector<std::vector<double> > > > _Q_sx_sy_a; //right-up-left-down == 0-1-2-3
+	std::vector<std::vector<std::vector<double> > > _Q_sx_sy_a; //right-up-left-down == 0-1-2-3
 
-	double gamma_discount_rt = 0.5;
+	double gamma_discount_rt = 0.8;
 	double lambda_learn_rt = 0.1;
 
 

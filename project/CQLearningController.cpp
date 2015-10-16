@@ -45,19 +45,14 @@ void CQLearningController::InitializeLearningAlgorithm(void)
 {
 	//TODO
 
-	//initialize the Q-tables with all 0's
-	for (uint sweeper = 0; sweeper < CParams::iNumSweepers; sweeper++){
-		std::vector<std::vector<std::vector<double > > > q_table;
-			for (uint x = 0; x < _grid_size_x; x++){
-				std::vector<std::vector<double> > state_y;
-				for (uint y = 0; y < _grid_size_y; y++){
-					state_y.push_back({0.5, 0.5, 0.5, 0.5});
-				}
+	//initialize the Q-table with all 0's
+	for (uint x = 0; x < _grid_size_x; x++){
+		std::vector<std::vector<double> > state_y;
+		for (uint y = 0; y < _grid_size_y; y++){
+			state_y.push_back({0.0, 0.0, 0.0, 0.0});
+		}
 
-				q_table.push_back(state_y);
-			}
-
-			_Q_sx_sy_a.push_back(q_table);
+		_Q_sx_sy_a.push_back(state_y);
 	}
 }
 /**
@@ -69,7 +64,7 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	//TODO: roll your own here!
 	//return 0;
 
-	double reward = 0.5f; //neutral reward
+	double reward = 0.0f; //neutral reward
 
 	//see what the minesweeper hit
 	int hit_index = ((m_vecSweepers[sweeper_no])->CheckForObject(m_vecObjects, CParams::dMineScale));
@@ -77,15 +72,15 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	{
 		switch (m_vecObjects[hit_index]->getType()){
 			case CDiscCollisionObject::Mine:{
-				reward = 1.0;
+				reward = 100.0;
 				break;
 			}
 			case CDiscCollisionObject::Rock:{
-				reward = 0.0;
+				reward = -100.0;
 				break;
 			}
 			case CDiscCollisionObject::SuperMine:{
-				reward = 0.0;
+				reward = -100.0;
 				break;
 			}
 		}
@@ -162,7 +157,7 @@ bool CQLearningController::Update(void)
 
 		//2:::Select action with highest historic return:
 		//TODO
-		int max_act = getMaxAct(_Q_sx_sy_a[sw][pos.x][pos.y]);
+		int max_act = getMaxAct(_Q_sx_sy_a[pos.x][pos.y]);
 		m_vecSweepers[sw]->setRotation((ROTATION_DIRECTION)max_act);
 
 		//now call the parents update, so all the sweepers fulfill their chosen action
@@ -193,8 +188,8 @@ bool CQLearningController::Update(void)
 		//	+ (lambda_learn_rt * _Q_sx_sy_a[sw][pos.x][pos.y][action])
 		//	)
 		//	);
-		_Q_sx_sy_a[sw][prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[sw][pos.x][pos.y]) - getMaxActVal(_Q_sx_sy_a[sw][prev_pos.x][prev_pos.y]))));
-		printf("QVAL: %f\n", _Q_sx_sy_a[sw][prev_pos.x][prev_pos.y][action]);
+		_Q_sx_sy_a[prev_pos.x][prev_pos.y][action] += (lambda_learn_rt * (R(pos.x, pos.y, sw) + (gamma_discount_rt * getMaxActVal(_Q_sx_sy_a[pos.x][pos.y]) - getMaxActVal(_Q_sx_sy_a[prev_pos.x][prev_pos.y]))));
+		//printf("QVAL: %f\n", _Q_sx_sy_a[prev_pos.x][prev_pos.y][action]);
 	}
 	return true;
 }
