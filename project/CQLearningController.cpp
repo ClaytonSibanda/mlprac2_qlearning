@@ -82,6 +82,7 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 		switch (m_vecObjects[hit_index]->getType()){
 			case CDiscCollisionObject::Mine:{
 				if (!m_vecObjects[hit_index]->isDead()){
+					printf("NOTDEAD");
 					reward = 100.0;
 				}
 				break;
@@ -96,8 +97,8 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 			}
 		}
 	}
-	if (reward != 0)
-		printf("%d reward = %f\n", sweeper_no, reward);
+	//if (reward != 0)
+	//	printf("%d reward = %f\n", sweeper_no, reward);
 	return reward;
 }
 
@@ -184,6 +185,7 @@ bool CQLearningController::Update(void)
 	CDiscController::Update(); //call the parent's class update. Do not delete this.
 	
 	for (uint sw = 0; sw < CParams::iNumSweepers; ++sw){
+		//TODO: just use bool cached from the first loop
 		if (m_vecSweepers[sw]->isDead() && deadCheck[sw]){
 			continue; 
 		}
