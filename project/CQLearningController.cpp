@@ -81,9 +81,9 @@ double CQLearningController::R(uint x, uint y, uint sweeper_no){
 	{
 		switch (m_vecObjects[hit_index]->getType()){
 			case CDiscCollisionObject::Mine:{
-				//if (!m_vecObjects[hit_index]->isDead()){
+				if (!m_vecObjects[hit_index]->isDead()){
 					reward = 100.0;
-				//}
+				}
 				break;
 			}
 			case CDiscCollisionObject::Rock:{
@@ -157,6 +157,8 @@ bool CQLearningController::Update(void)
 	if (cDead == CParams::iNumSweepers){
 		printf("All dead ... skipping to next iteration\n");
 		m_iTicks = CParams::iNumTicks;
+
+		resetDeadCheck();
 	}
 
 	for (uint sw = 0; sw < CParams::iNumSweepers; ++sw){
