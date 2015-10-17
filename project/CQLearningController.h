@@ -19,6 +19,9 @@ private:
 	double gamma_discount_rt = 0.8;
 	double lambda_learn_rt = 0.1;
 
+	std::vector<bool> deadCheck;
+	void resetDeadCheck();
+
 
 public:
 	CQLearningController(HWND hwndMain);
